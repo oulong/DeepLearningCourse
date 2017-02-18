@@ -1,0 +1,14 @@
+﻿1. 操作系统：windows server 2008 R2 Standand
+2. Anaconda3-4.1.1-Windows-x86_64.exe
+   由于课程中用到了tensorflow=0.12.1包，这个包依赖的是 python3.5，所以选择了 Anaconda3-4.1.1这个版本
+   
+ps： conda 下载很慢，添加清华提供的anaconda镜像
+conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
+conda config --set show_channel_urls yes
+
+关于：import matplotlib.pyplot as plt报错: ValueError: _getfullpathname: embedded null character
+解决方法：
+	1 > 打开：font_manager.py
+	2 > 在231行(左右)
+		把：direc = os.path.abspath(direc).lower()
+		改为：direc = direc.split('\0', 1)[0]
