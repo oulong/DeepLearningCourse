@@ -18,6 +18,8 @@ learnrate = 0.005
 n_records, n_features = features.shape
 last_loss = None
 # Initialize weights
+#todo scale的设置?
+#http://blog.csdn.net/xbinworld/article/details/50603552
 weights_input_hidden = np.random.normal(scale=1 / n_features ** .5,
                                         size=(n_features, n_hidden))
 weights_hidden_output = np.random.normal(scale=1 / n_features ** .5,
