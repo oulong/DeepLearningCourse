@@ -1,0 +1,6 @@
+In addition to TFLearn, you'll also need to learn a little about some of the foundational concepts of Sentiment Analysis that Siraj will use in his tutorial this week. Through this lesson, I'll provide you with some background on these ideas so that you can get enough of an understanding to use them in the context of Deep Learning.
+
+In particular, we'll cover the following:
+
+Bag Of Words
+Word2Vec

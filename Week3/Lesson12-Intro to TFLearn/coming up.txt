@@ -1,0 +1,10 @@
+Intro to TFLearn
+This week, Siraj will show you how to build a neural network for sentiment analysis using a library called TFLearn. In this lesson, we'll get you started with the library and provide some more background so you can get the most out of his video.
+
+TFLearn does a lot of the heavy lifting for you such as initializing weights, running the forward pass, and taking care of backpropagation. Before we get to TFLearn itself, you'll need to spend some time learning more about activation functions and a new cost function.
+
+What's coming up
+Activation functions: Rectified linear units (ReLUs) and Softmax
+Classification cost function: Categorical Cross Entropy
+Sentiment Analysis with TFLearn
+Handwritten digit recognition with TFLearn
