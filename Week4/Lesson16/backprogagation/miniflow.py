@@ -18,7 +18,7 @@ class Node(object):
     def forward(self):
         raise NotImplementedError
 
-    def backwrad(self):
+    def backward(self):
         raise NotImplementedError
 
 class Input(Node):
@@ -27,21 +27,16 @@ class Input(Node):
         Node.__init__(self)
 
     def forward(self, value=None):
+        pass
+
+    def backward(self):
         
-        if value is not None:
-            self.value = value
+        self.gradients = {self: 0}
 
-class Add(Node):
-
-    def __init__(self, x, y):
-        Node.__init__(self, [x, y])
-
-    def forward(self):
-        self.value = 0
-        for i in range(len(self.inbound_nodes)):
-            self.value += self.inbound_nodes[i].value
-        return self.value 
-
+        for n in self.outbound_nodes:
+            grad_cost = n.gradients[self]
+            self.gradients[self] += grad_cost * 1
+        
 class Sigmoid(Node):
 
     def __init__(self, n):
@@ -52,21 +47,17 @@ class Sigmoid(Node):
 
     def forward(self):
         self.value = self._sigmoid(self.inbound_nodes[0].value) 
-        return self.value
+
+    def backward(self):
+
+        self.gradients = {n: np.zeros_like(n.value) for n in self.inbound_nodes}
+        
+        for n in self.outbound_nodes:
+            grad_cost = n.gradients[self]
+            self.gradients[self.inbound_nodes[0]] += \
+                    self.value * (1 - self.value) * grad_cost 
     
 class Linear(Node):
-
-    def __init__(self, inputs, weights, bias):
-        Node.__init__(self, [inputs, weights, bias])
-
-    def forward(self):
-        inputs = self.inbound_nodes[0].value
-        weights = self.inbound_nodes[1].value
-        bias = self.inbound_nodes[2].value
-        self.value = sum(map(lambda x,y:x*y, inputs,weights)) + bias 
-        return self.value
-    
-class LinearMatrix(Node):
 
     def __init__(self, X, W, B):
         Node.__init__(self, [X, W, B])
@@ -78,7 +69,21 @@ class LinearMatrix(Node):
         B = self.inbound_nodes[2].value
 
         self.value = X.dot(W) + B 
-        return self.value
+
+    def backward(self):
+        self.gradients = {n: np.zeros_like(n.value) for n in self.inbound_nodes}
+
+        for n in self.outbound_nodes:
+            grad_cost = n.gradients[self]
+
+            self.gradients[self.inbound_nodes[0]] += \
+                    np.dot(grad_cost, self.inbound_nodes[1].value.T)
+            self.gradients[self.inbound_nodes[1]] += \
+                    np.dot(self.inbound_nodes[0].value.T, grad_cost)
+
+            self.gradients[self.inbound_nodes[2]] += \
+                    np.sum(grad_cost, axis=0, keepdims=False)
+
 
 class MSE(Node):
 
@@ -90,8 +95,15 @@ class MSE(Node):
         y = self.inbound_nodes[0].value.reshape(-1,1)
         a = self.inbound_nodes[1].value.reshape(-1,1)
 
+        self.m = self.inbound_nodes[0].value.shape[0]
+        self.diff = y - a
+
         #self.value =  sum(np.square(y - a)) / len(y)
-        self.value = np.mean(np.square(y - a))
+        self.value = np.mean(np.square(self.diff))
+
+    def backward(self):
+        self.gradients[self.inbound_nodes[0]] = (2 / self.m) * self.diff 
+        self.gradients[self.inbound_nodes[1]] = (-2 / self.m) * self.diff
 
 '''
 Kahn's algorihtm
@@ -132,15 +144,12 @@ def topological_sort(feed_dict):
         
     return L
 
-def forward_pass(output_node, sorted_nodes):
+def forward_and_backward(graph):
 
-    for n in sorted_nodes:
+    for n in graph:
         n.forward()
 
-    return output_node.value
 
-def forward_pass_no_ret(sorted_nodes):
-
-    for n in sorted_nodes:
-        n.forward()
+    for n in graph[::-1]:
+        n.backward()
 
